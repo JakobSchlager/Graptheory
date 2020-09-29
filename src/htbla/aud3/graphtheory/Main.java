@@ -1,4 +1,4 @@
-package com.company;
+package htbla.aud3.graphtheory;
 
 public class Main {
 
