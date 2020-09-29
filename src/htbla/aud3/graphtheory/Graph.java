@@ -1,6 +1,8 @@
 package htbla.aud3.graphtheory;
 
-import java.io.File;
+import java.io.*;
+import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -9,11 +11,12 @@ import java.util.List;
  */
 public class Graph {
 
-    public void read(File adjacencyMatrix) {
-            adjacencyMatrix.getPath().lines().forEach(line -> {
-            List<String> lines = Arrays.asList(line.split(";"));
-                System.out.println("test"+lines.get(0));
-        });
+    public void read(File adjacencyMatrix) throws IOException {
+        System.out.println(adjacencyMatrix.exists());
+        //System.out.println(new BufferedReader(new FileReader(adjacencyMatrix)).readLine());
+
+        String lines = Files.lines(adjacencyMatrix.getAbsoluteFile().toPath()).reduce((allLines, line) -> allLines+=line).get();
+        System.out.println(lines);
      }
 
     public Path determineShortestPath(int sourceNodeId, int targetNodeId) {
