@@ -13,7 +13,6 @@ public class Graph {
 
     public void read(File adjacencyMatrix) throws IOException {
         System.out.println(adjacencyMatrix.exists());
-        //System.out.println(new BufferedReader(new FileReader(adjacencyMatrix)).readLine());
 
         String lines = Files.lines(adjacencyMatrix.getAbsoluteFile().toPath()).reduce((allLines, line) -> allLines+=line).get();
         System.out.println(lines);

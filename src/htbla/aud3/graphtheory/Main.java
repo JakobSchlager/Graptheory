@@ -8,7 +8,7 @@ public class Main {
     public static void main(String[] args) {
         Graph graph = new Graph();
         try {
-            graph.read(new File("src\\htbla\\aud3\\graphtheory\\files\\Flussproblem.csv"));
+            graph.read(new File("src\\htbla\\aud3\\graphtheory\\files\\Linz.csv"));
         } catch (IOException e) {
             e.printStackTrace();
         }
