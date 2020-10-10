@@ -4,6 +4,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -11,95 +12,77 @@ import java.util.stream.Collectors;
  * @author TODO Bitte Gruppenmitglieder eintragen!
  */
 public class Graph {
-    List<ArrayList<Node>> nodes = new ArrayList<ArrayList<Node>>();
+    private double currentShortestPath = 10000.0;
+    //private int currentShortestPath = 10000;
+    public static List<ArrayList<Node>> nodes = new ArrayList<>();
 
     public void read(File adjacencyMatrix) throws IOException {
-        System.out.println(adjacencyMatrix.exists());
-
         List<String> lines = Files.lines(adjacencyMatrix.getAbsoluteFile().toPath()).collect(Collectors.toList());
         lines.forEach(line -> {
             List<String> connections = Arrays.asList(line.split(";"));
             ArrayList<Node> connectionsPerNode = new ArrayList<>();
             for (int i = 0; i < connections.size(); i++) {
-                Integer connectionIntValue = Integer.valueOf(connections.get(i));
+                int connectionIntValue = Integer.parseInt(connections.get(i));
                 if(connectionIntValue != 0)  connectionsPerNode.add(new Node(i, connectionIntValue));
             }
             nodes.add(connectionsPerNode);
         });
     }
 
+    public static List<ArrayList<Node>> getNodes() {
+        return nodes;
+    }
+
     public Path determineShortestPath(int sourceNodeId, int targetNodeId) {
-        System.out.println(recursivePathSearch(52, 2, 0, 0, 0));
-
-        return null;
+        //System.out.println(recursivePathSearch(sourceNodeId, targetNodeId, 0, 0));
+        Path path = recursivePathSearch(sourceNodeId, targetNodeId, new Path().setNodeIds(new int[]{sourceNodeId}));
+        System.out.println(path.computeDistance());
+        return path;
     }
 
-    private int recursivePathSearch(int sourceNodeId, int targetNodeId, int distance, int caller, int attempt) {
-        if(attempt >= 20) return Integer.MAX_VALUE;
-        if(sourceNodeId == targetNodeId) return distance;
+    private Path recursivePathSearch(int sourceNodeId, int targetNodeId, Path callers) {
+        //currentShortestPath ist der kürtzeste Weg der aktuell gefuden wurde, ist distance größer ist weitere suche sinnlos
+        if(callers.computeDistance() > currentShortestPath) return null;
 
-        int overallDistance = Integer.MAX_VALUE;
-            for (Node node : nodes.get(sourceNodeId)) {
-                if(caller != node.getTargetNode()) {
-                    int tempOverallDistance = recursivePathSearch(node.getTargetNode(), targetNodeId, distance + node.getDistance(), sourceNodeId, attempt+=1);
-                    if (tempOverallDistance < overallDistance) overallDistance = tempOverallDistance;
-                }
+        //Abbruchsbedingung
+        if(sourceNodeId == targetNodeId) {
+            if(currentShortestPath > callers.computeDistance()) currentShortestPath = callers.computeDistance();
+            return callers;
+        }
+
+        //inMethodShortestPath ist der kürzeste Weg von sourceNodeId zu targetNodeId
+        Path tempCallers;
+        Path inMethodShortestPath = null;
+        for (Node node : nodes.get(sourceNodeId).stream().sorted(Comparator.comparingInt(Node::getDistance)).collect(Collectors.toList())) {
+            if(Arrays.stream(callers.getNodeIds()).noneMatch(nodeId -> nodeId == node.getTargetNode())) {
+                //temp callers muss jedes mal auf den wert von nodeIds zurückgesetzt werden, da sonst von dem letzten methodenaufruf/Weg die Knoten gespeichert bleiben würden
+                tempCallers = new Path().setNodeIds(callers.nodeIds);
+                Path tempShortestPath = recursivePathSearch(node.getTargetNode(), targetNodeId, tempCallers.addNodeIds(new int[]{node.getTargetNode()}));
+                //es wird überprüft ob ein weg möglich ist (!= null) und ob tempShortestPath kleiner ist als der bis jetzt in der recursion gemessenen kürzeste weg (= in MethodShortestPath)
+                if (inMethodShortestPath == null || (tempShortestPath != null && tempShortestPath.computeDistance() < inMethodShortestPath.computeDistance())) inMethodShortestPath = tempShortestPath;
             }
-            return overallDistance;
+        }
+        return inMethodShortestPath;
     }
 
-    /* private int recursivePathSearchLoopDetection(int sourceNodeId, int targetNodeId, int distance, int caller, List<Integer> loopList) {
-        //Treashhold evt. 20 anpassbar!
-        if(isLoop(loopList)) return Integer.MAX_VALUE;
-        if(sourceNodeId == targetNodeId) return distance;
-        else {
-            int overallDistance = Integer.MAX_VALUE;
-
-            for (Node node : nodes.get(sourceNodeId)) {
-                if(caller != node.getTargetNode()) {
-                    loopList.add(node.getTargetNode());
-                    int tempOverallDistance = recursivePathSearchLoopDetection(node.getTargetNode(), targetNodeId, distance + node.getDistance(), sourceNodeId, loopList);
-                    if (tempOverallDistance < overallDistance) overallDistance = tempOverallDistance;
-                }
-            }
-            return overallDistance;
-        }
-    }*/
-
-    /*private boolean isLoop(List<Integer> loopList) {
-        if(loopList.size() < 20) return false;
-
-        int loopLength = 0;
-        for (int i = 0; i < loopList.size(); i++) {
-            for (int j = 0; j < loopList.size(); j++) {
-                if(i != j && loopList.get(i) == loopList.get(j)) {
-
-                        loopLength = i-j;
-                    if(loopLength < 0) loopLength = loopLength * -1;
-
-                    List<Integer> loopPart1;
-                    List<Integer> loopPart2;
-                    if(i > j) {
-                        if(i+loopLength <= loopList.size()) return false;
-                        loopPart1 = loopList.subList(i-loopLength, i);
-                        loopPart2 = loopList.subList(i, i+loopLength);
-                    } else {
-                        if(j+loopLength <= loopList.size()) return false;
-                        loopPart1 = loopList.subList(j-loopLength, j);
-                        loopPart2 = loopList.subList(j, j+loopLength);
-                    }
-
-                    return loopPart1.equals(loopPart2);
-
-                }
-            }
+    private int recursivePathSearch(int sourceNodeId, int targetNodeId, int distance, int caller) {
+        //currentShortestPath ist der kürzesze Weg der aktuell gefuden wurde, ist distance größer ist weitere suche sinnlos
+        if(distance > currentShortestPath) return Integer.MAX_VALUE;
+        //Abbruchsbedingung
+        if(sourceNodeId == targetNodeId) {
+            if(currentShortestPath > distance) currentShortestPath = distance;
+            return distance;
         }
 
-        return false;
-    } */
-
-    public Path determineShortestPath(int sourceNodeId, int targetNodeId, int... viaNodeIds) {
-        return null;
+        //inMethodShortestPath ist der kürzeste Weg von sourceNodeId zu targetNodeId
+        int inMethodShortestPath = Integer.MAX_VALUE;
+        for (Node node : nodes.get(sourceNodeId).stream().sorted(Comparator.comparingInt(Node::getDistance)).collect(Collectors.toList())) {
+            if(caller != node.getTargetNode()) {
+                int tempShortestPath = recursivePathSearch(node.getTargetNode(), targetNodeId, distance + node.getDistance(), sourceNodeId);
+                if (tempShortestPath < inMethodShortestPath) inMethodShortestPath = tempShortestPath;
+            }
+        }
+        return inMethodShortestPath;
     }
 
     public double determineMaximumFlow(int sourceNodeId, int targetNodeId) {
@@ -127,4 +110,19 @@ public class Graph {
             return targetNode;
         }
     }
+
+    //1. Lösung mit "attempts"
+    /*private int recursivePathSearch(int sourceNodeId, int targetNodeId, int distance, int caller, int attempt) {
+        if(attempt >= 20) return Integer.MAX_VALUE;
+        if(sourceNodeId == targetNodeId) return distance;
+
+        int overallDistance = Integer.MAX_VALUE;
+            for (Node node : nodes.get(sourceNodeId)) {
+                if(caller != node.getTargetNode()) {
+                    int tempOverallDistance = recursivePathSearch(node.getTargetNode(), targetNodeId, distance + node.getDistance(), sourceNodeId, attempt+=1);
+                    if (tempOverallDistance < overallDistance) overallDistance = tempOverallDistance;
+                }
+            }
+            return overallDistance;
+    }*/
 }
