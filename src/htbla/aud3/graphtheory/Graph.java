@@ -80,8 +80,8 @@ public class Graph {
     }
 
     class Node {
-        private int targetNode;
-        private int distance;
+        private final int targetNode;
+        private final int distance;
 
         public Node(int targetNode, int distance) {
             this.targetNode = targetNode;
