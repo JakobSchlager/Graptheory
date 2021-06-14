@@ -17,7 +17,6 @@ public class Path {
         int[] result = Arrays.copyOf(this.nodeIds, this.nodeIds.length+nodeIds.length);
         System.arraycopy(nodeIds, 0, result, this.nodeIds.length, nodeIds.length);
 
-
         this.nodeIds = result;
         return this;
     }
