@@ -13,25 +13,9 @@ public class Graph {
     private double currentShortestPath = 10000.0;
     private static final int ONEWAYROAD_THREASHOLD = 2000;
     public static List<ArrayList<Node>> nodes = new ArrayList<>();
-    public static List<ArrayList<Node>> fluss = new ArrayList<>();
+    public static List<List<Node>> fluss = new ArrayList<>();
 
     public int maxFlow = 2000;
-    /*public void read(File adjacencyMatrix)  {
-        try {
-            List<String> lines = Files.lines(adjacencyMatrix.getAbsoluteFile().toPath()).collect(Collectors.toList());
-            lines.forEach(line -> {
-                List<String> connections = Arrays.asList(line.split(";"));
-                ArrayList<Node> connectionsPerNode = new ArrayList<>();
-                for (int i = 0; i < connections.size(); i++) {
-                    int connectionIntValue = Integer.parseInt(connections.get(i));
-                    if (connectionIntValue != 0) connectionsPerNode.add(new Node(i, connectionIntValue));
-                }
-                nodes.add(connectionsPerNode);
-            });
-        } catch (IOException E) {
-            System.out.println("IO Exception!");
-        }
-    }*/
 
     public void read(File adjacencyMatrix, boolean flussproblem) {
         try {
@@ -289,31 +273,6 @@ public class Graph {
         return inMethodShortestPath;
     }
 
-
-
-    /*public int recursiveMaxFlowSearch(Node in_node, int to, int currentMaxFlow, ArrayList<Integer> callers) {
-        int from = in_node.getTargetNode();
-        if(from == to) return currentMaxFlow;
-
-        ArrayList<Integer> tempCallers;
-        int inMethodMaxFluss = 0;
-        for (int i = 0; i < fluss.get(from).size(); i++) {
-            Node node = fluss.get(from).get(i);
-
-            tempCallers = callers;
-            tempCallers.add(from);
-            if(!tempCallers.contains(node.getTargetNode())) {
-                int tempMaxFluss = recursiveMaxFlowSearch(node, to, node.getDistance(), tempCallers);
-                if (tempMaxFluss > inMethodMaxFluss) {
-                    inMethodMaxFluss = tempMaxFluss;
-                    fluss.get(tempCallers.size() - 2).get(from).setDistance(in_node.distance - node.getDistance());
-                }
-            }
-        }
-
-        return inMethodMaxFluss;
-    }*/
-
     //correct logic for Flussproblem
 
     public int recursiveFlussproblem(Node old_node, int to, int last_from) {
@@ -339,84 +298,5 @@ public class Graph {
         return inMethodFluss;
     }
 }
-/*public int recursiveFlussproblem(Node old_node, int to, List<Integer> callers) {
-        int from = old_node.getTargetNode();
-        if (from == to) return old_node.getDistance();
 
-        int inMethodFluss = 0;
-
-        List<Integer> tempCallers = callers;
-        tempCallers.add(from);
-        for (Node new_node : fluss.get(from)) {
-            if(from == to) break;
-
-            if(old_node.getDistance() < new_node.getDistance()) new_node.setDistance(old_node.getDistance());
-
-            int res = 0;
-            if(new_node.getDistance() > 0) res = recursiveFlussproblem(new_node, to, tempCallers);
-
-            inMethodFluss += res;
-            old_node.setDistance(old_node.getDistance() - res);
-        }
-
-        return inMethodFluss;
-    }*/
-
-    //angekommen: merke den fluss
-
-    //für jeden möglichen weg:
-    //-zurückgehen verbieten!
-    //-überprüfen ob vorherige node noch flussmenge hat,
-    //  falls old_node.flussmenge > new_node.flussmenge -> old_node.flussmenge = old_node.flussmenge - new_node.flussmenge;
-    //  falls new_node.flussmenge > old_node.flussmenge -> new_node.flussmenge = old_node.flussmenge;
-    //falls nicht kann beendet werden
-    //-recusrive durchführung
-
-
-
-
-
-    //ohne path:
-    /*private int recursivePathSearch(int sourceNodeId, int targetNodeId, int distance, int caller) {
-        //currentShortestPath ist der kürzesze Weg der aktuell gefuden wurde, ist distance größer ist weitere suche sinnlos
-        if(distance > currentShortestPath) return Integer.MAX_VALUE;
-        //Abbruchsbedingungwfws
-        if(sourceNodeId == targetNodeId) {
-            if(currentShortestPath > distance) currentShortestPath = distance;
-            return distance;
-        }
-
-        //inMethodShortestPath ist der kürzeste Weg von sourceNodeId zu targetNodeId
-        int inMethodShortestPath = Integer.MAX_VALUE;
-        for (Node node : nodes.get(sourceNodeId).stream().sorted(Comparator.comparingInt(Node::getDistance)).collect(Collectors.toList())) {
-            if(caller != node.getTargetNode()) {
-                int tempShortestPath = recursivePathSearch(node.getTargetNode(), targetNodeId, distance + node.getDistance(), sourceNodeId);
-                if (tempShortestPath < inMethodShortestPath) inMethodShortestPath = tempShortestPath;
-            }
-        }
-        return inMethodShortestPath;
-    }
-
-    public double determineMaximumFlow(int sourceNodeId, int targetNodeId) {
-        return -1.0;
-    }
-
-    public List<Edge> determineBottlenecks(int sourceNodeId, int targetNodeId) {
-        return null;
-    }*/
-
-    /*public List<List<Integer>> cartesianProduct(int index, List<Integer>... list) {
-        List<List<Integer>> ret = new ArrayList<>();
-        if (index == list.length) {
-            ret.add(new ArrayList<Integer>());
-        } else {
-            for (Integer integer : list[index]) {
-                for (List<Integer> innerRecusion : cartesianProduct(index+1, list)) {
-                    if(!innerRecusion.contains(integer)) innerRecusion.add(integer);
-                    ret.add(innerRecusion);
-                }
-            }
-        }
-        return ret;
-    }*/
 
